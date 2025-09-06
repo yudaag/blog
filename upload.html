@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>새 글 작성</title>
+<style>
+  body{background:#0f1724;color:#e6eef8;font-family:sans-serif;padding:40px;}
+  input,textarea{width:100%;padding:8px;margin:10px 0;border-radius:6px;border:none;font-size:16px;}
+  button{padding:10px 16px;border:none;border-radius:6px;background:#7dd3fc;color:#000;font-weight:600;cursor:pointer;margin-right:8px;}
+</style>
+</head>
+<body>
+<h1>✏️ 새 글 작성</h1>
+<input type="text" id="new-title" placeholder="제목">
+<textarea id="new-content" rows="10" placeholder="내용"></textarea>
+<br>
+<button onclick="savePost()">글 추가</button>
+<button onclick="window.location.href='static.html'">취소</button>
+
+<script>
+function savePost(){
+  const title = document.getElementById('new-title').value.trim();
+  const content = document.getElementById('new-content').value.trim();
+  if(!title || !content){
+    alert('제목과 내용을 입력하세요.');
+    return;
+  }
+
+  // 기존 글 배열 불러오기
+  let posts = JSON.parse(localStorage.getItem('posts') || '[]');
+
+  // 새 글 추가
+  const newPost = {
+    slug: Date.now().toString(),
+    title,
+    date: new Date().toISOString().split('T')[0],
+    content
+  };
+  posts.unshift(newPost);
+
+  // 로컬스토리지에 저장
+  localStorage.setItem('posts', JSON.stringify(posts));
+
+  // 작성 완료 후 static.html로 이동
+  window.location.href = 'static.html';
+}
+</script>
+</body>
+</html>
