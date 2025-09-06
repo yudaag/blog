@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Blog</title>
+<title>나의 블로그</title>
 <style>
 :root{--bg:#0f1724;--card:#0b1220;--accent:#7dd3fc;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
 *{box-sizing:border-box}
@@ -22,11 +22,15 @@ nav{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);paddin
 .post-item .meta{font-size:12px;color:var(--muted);margin-top:6px}
 article{padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
 .post-title{margin:0 0 8px 0}
-.post-date{color:var(--muted);font-size:13px;margin-bottom:18px}
+.post-date{color:var(--muted);font-size:13px;margin-bottom:8px}
 pre{background:#00121a;padding:12px;border-radius:8px;overflow:auto}
 a{color:var(--accent)}
 footer{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+hr.post-divider{border:none;border-bottom:1px solid rgba(255,255,255,0.2);margin:10px 0;}
 @media (max-width:900px){main{grid-template-columns:1fr}nav{order:2}article{order:1}}
+button{padding:8px 14px;border:none;border-radius:8px;background:var(--accent);color:#000;font-weight:600;cursor:pointer;margin-right:6px}
+.edit-btn{background:#60a5fa;color:#fff}
+.delete-btn{background:#f87171;color:#fff}
 </style>
 </head>
 <body>
@@ -52,26 +56,18 @@ footer{padding:20px;text-align:center;color:var(--muted);font-size:13px}
 </nav>
 
 <article id="article">
-  
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-    <!-- 왼쪽: 새 글 작성 -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
     <button onclick="window.location.href='upload.html'">✍️ 새 글 작성</button>
-
-    <!-- 오른쪽: 수정, 삭제 -->
     <div>
         <button class="edit-btn" onclick="editCurrentPost()">수정</button>
         <button class="delete-btn" onclick="deleteCurrentPost()">삭제</button>
     </div>
-    </div>
-
-  <h1 class="post-title" id="post-title">환영합니다</h1>
-  <div class="post-date" id="post-date">게시일: —</div>
-
-  <hr style="border:none; border-bottom:1px solid rgba(255,255,255,0.2); margin:10px 0;">
-
-  <div id="post-content">
-    <p>이 템플릿은 정적 블로그입니다. 게시글은 <code>/posts/<slug>.md</code> 형태의 마크다운 파일로 관리하고, 목록은 localStorage에 저장됩니다.</p>
   </div>
+
+  <h1 class="post-title" id="post-title">게시물을 작성해보세요</h1>
+  <div class="post-date" id="post-date"></div>
+  <hr class="post-divider">
+  <div id="post-content"></div>
 </article>
 </main>
 
@@ -98,27 +94,17 @@ function mdToHtml(md){
   return md;
 }
 
-const FALLBACK_POSTS = [];
-
 let posts = [];
 let currentPost = null;
 
 function loadPosts(){
-  const stored = JSON.parse(localStorage.getItem('posts') || '[]');
-  posts = stored.length ? stored : [...FALLBACK_POSTS];
+  posts = JSON.parse(localStorage.getItem('posts') || '[]');
   renderPostList(posts);
 }
 
 function renderPostList(posts){
   const list = document.getElementById('post-list');
   list.innerHTML = '';
-  if(posts.length === 0){
-    document.getElementById('post-title').textContent = "게시물을 작성해보세요";
-    document.getElementById('post-date').textContent = "";
-    document.getElementById('post-content').innerHTML = "";
-    document.getElementById('post-actions').style.display = 'none';
-    return;
-  }
   posts.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
   posts.forEach(p=>{
     const it = document.createElement('div'); it.className='post-item';
@@ -126,7 +112,7 @@ function renderPostList(posts){
     it.addEventListener('click',()=> loadPost(p));
     list.appendChild(it);
   });
-  loadPost(posts[0]);
+  if(posts.length) loadPost(posts[0]);
 }
 
 function loadPost(p){
@@ -134,7 +120,6 @@ function loadPost(p){
   document.getElementById('post-title').textContent = p.title || '제목 없음';
   document.getElementById('post-date').textContent = '게시일: ' + (p.date||'—');
   document.getElementById('post-content').innerHTML = mdToHtml(p.content||'');
-  document.getElementById('post-actions').style.display = 'block';
 }
 
 function editCurrentPost(){
@@ -152,14 +137,13 @@ function editCurrentPost(){
 function deleteCurrentPost(){
   if(!currentPost) return;
   if(confirm("정말 삭제하시겠습니까?")){
-    posts = posts.filter(p=>p.slug !== currentPost.slug);
+    posts = posts.filter(p=>p !== currentPost);
     savePostsToStorage();
     currentPost = null;
     renderPostList(posts);
     document.getElementById('post-title').textContent = "게시물을 작성해보세요";
     document.getElementById('post-date').textContent = "";
     document.getElementById('post-content').innerHTML = "";
-    document.getElementById('post-actions').style.display = 'none';
   }
 }
 
