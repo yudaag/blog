@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Blog</title>
+<style>
+:root{--bg:#0f1724;--card:#0b1220;--accent:#7dd3fc;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:0;background:linear-gradient(180deg,var(--bg),#071027);color:#e6eef8;-webkit-font-smoothing:antialiased}
+header{padding:28px 20px;display:flex;align-items:center;gap:16px}
+.logo{width:56px;height:56px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent)}
+.site-title{font-size:20px;font-weight:700}
+.site-desc{color:var(--muted);font-size:13px}
+main{display:grid;grid-template-columns:320px 1fr;gap:24px;padding:20px}
+nav{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:18px;border-radius:12px}
+.about{font-size:14px;color:var(--muted);margin-bottom:12px}
+.tag{display:inline-block;padding:6px 8px;border-radius:8px;background:rgba(125,211,252,0.08);color:var(--accent);font-size:12px;margin:4px 4px 8px 0}
+.post-list{display:flex;flex-direction:column;gap:10px}
+.post-item{padding:10px;border-radius:8px;background:var(--card);cursor:pointer}
+.post-item h3{margin:0;font-size:15px}
+.post-item .meta{font-size:12px;color:var(--muted);margin-top:6px}
+article{padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent)}
+.post-title{margin:0 0 8px 0}
+.post-date{color:var(--muted);font-size:13px;margin-bottom:18px}
+pre{background:#00121a;padding:12px;border-radius:8px;overflow:auto}
+a{color:var(--accent)}
+footer{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+button{padding:6px 12px;border:none;border-radius:6px;background:var(--accent);color:#000;font-weight:600;cursor:pointer;margin-right:6px;}
+input{padding:8px;border-radius:6px;border:none;width:100%;margin:6px 0;}
+@media (max-width:900px){main{grid-template-columns:1fr}nav{order:2}article{order:1}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">BL</div>
+  <div>
+    <div class="site-title">나의 블로그</div>
+    <div class="site-desc">학교 과제용 블로그 템플릿</div>
+  </div>
+</header>
+
+<main>
+<nav>
+  <div class="about">키워드</div>
+  <div class="tags">
+    <span class="tag">크로스플랫폼프로그래밍</span>
+    <span class="tag">블로그</span>
+    <span class="tag">프로젝트</span>
+  </div>
+  <hr style="border:none;margin:14px 0;border-top:1px solid rgba(255,255,255,0.03)">
+  <div style="font-size:14px;color:var(--muted);margin-bottom:10px">글 목록</div>
+  <div class="post-list" id="post-list"></div>
+</nav>
+
+<article id="article">
+  
+    <div id="post-actions" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <!-- 왼쪽: 새 글 작성 -->
+    <button onclick="window.location.href='upload.html'">✍️ 새 글 작성</button>
+
+    <!-- 오른쪽: 수정, 삭제 -->
+    <div>
+        <button class="edit-btn" onclick="editCurrentPost()">수정</button>
+        <button class="delete-btn" onclick="deleteCurrentPost()">삭제</button>
+    </div>
+    </div>
+
+  <h1 class="post-title" id="post-title">환영합니다</h1>
+  <div class="post-date" id="post-date">게시일: —</div>
+
+  <hr style="border:none; border-bottom:1px solid rgba(255,255,255,0.2); margin:10px 0;">
+
+  <div id="post-content">
+    <p>이 템플릿은 정적 블로그입니다. 게시글은 <code>/posts/<slug>.md</code> 형태의 마크다운 파일로 관리하고, 목록은 localStorage에 저장됩니다.</p>
+  </div>
+
+  <!-- 댓글 영역 -->
+  <hr style="border:none; border-bottom:1px solid rgba(255,255,255,0.2); margin:20px 0;">
+  <div id="comments-section">
+    <h3 style="margin-top:0;">💬 댓글</h3>
+    <div id="comment-list" style="margin-bottom:10px;"></div>
+    <input type="text" id="comment-input" placeholder="댓글을 입력하세요" />
+    <button onclick="addComment()">등록</button>
+  </div>
+</article>
+</main>
+
+<footer>Made for school assignment · blog template</footer>
+
+<script>
+function mdToHtml(md){
+  md = md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  md = md.replace(/```([\s\S]*?)```/g, (_, code)=>'<pre><code>'+code+'</code></pre>');
+  md = md.replace(/`([^`]+)`/g,'<code>$1</code>');
+  md = md.replace(/^###### (.*$)/gim,'<h6>$1</h6>');
+  md = md.replace(/^##### (.*$)/gim,'<h5>$1</h5>');
+  md = md.replace(/^#### (.*$)/gim,'<h4>$1</h4>');
+  md = md.replace(/^### (.*$)/gim,'<h3>$1</h3>');
+  md = md.replace(/^## (.*$)/gim,'<h2>$1</h2>');
+  md = md.replace(/^# (.*$)/gim,'<h1>$1</h1>');
+  md = md.replace(/^\s*[-*] (.*)/gim,'<li>$1</li>');
+  md = md.replace(/(<li>[\s\S]*?<\/li>)(?!(<[\s\S]*?<li>))/gim,m=>'<ul>'+m+'</ul>');
+  md = md.replace(/\[([^\]]+)\]\(([^\)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
+  md = md.replace(/\n{2,}/g,'\n\n').split('\n\n').map(p=>{
+    if(/^\s*<\/?(h|ul|pre|blockquote|img|code)/.test(p)) return p;
+    return '<p>'+p.replace(/\n/g,'<br>')+'</p>';
+  }).join('');
+  return md;
+}
+
+const FALLBACK_POSTS = [];
+
+let posts = [];
+let currentPost = null;
+
+function loadPosts(){
+  const stored = JSON.parse(localStorage.getItem('posts') || '[]');
+  posts = stored.length ? stored : [...FALLBACK_POSTS];
+  renderPostList(posts);
+}
+
+function renderPostList(posts){
+  const list = document.getElementById('post-list');
+  list.innerHTML = '';
+  if(posts.length === 0){
+    document.getElementById('post-title').textContent = "게시물을 작성해보세요";
+    document.getElementById('post-date').textContent = "";
+    document.getElementById('post-content').innerHTML = "";
+    document.getElementById('post-actions').style.display = 'none';
+    return;
+  }
+  posts.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  posts.forEach(p=>{
+    const it = document.createElement('div'); it.className='post-item';
+    it.innerHTML = `<h3>${p.title}</h3><div class="meta">${p.date||''}</div>`;
+    it.addEventListener('click',()=> loadPost(p));
+    list.appendChild(it);
+  });
+  loadPost(posts[0]);
+}
+
+function loadPost(p){
+  currentPost = p;
+  if (!currentPost.comments) currentPost.comments = [];
+  document.getElementById('post-title').textContent = p.title || '제목 없음';
+  document.getElementById('post-date').textContent = '게시일: ' + (p.date||'—');
+  document.getElementById('post-content').innerHTML = mdToHtml(p.content||'');
+  document.getElementById('post-actions').style.display = 'block';
+  renderComments();
+}
+
+function editCurrentPost(){
+  if(!currentPost) return;
+  const newTitle = prompt("새 제목을 입력하세요:", currentPost.title);
+  if(newTitle === null) return;
+  const newContent = prompt("새 내용을 입력하세요:", currentPost.content);
+  if(newContent === null) return;
+  currentPost.title = newTitle;
+  currentPost.content = newContent;
+  savePostsToStorage();
+  renderPostList(posts);
+}
+
+function deleteCurrentPost(){
+  if(!currentPost) return;
+  if(confirm("정말 삭제하시겠습니까?")){
+    posts = posts.filter(p=>p.slug !== currentPost.slug);
+    savePostsToStorage();
+    currentPost = null;
+    renderPostList(posts);
+    document.getElementById('post-title').textContent = "게시물을 작성해보세요";
+    document.getElementById('post-date').textContent = "";
+    document.getElementById('post-content').innerHTML = "";
+    document.getElementById('post-actions').style.display = 'none';
+    document.getElementById('comment-list').innerHTML = "";
+  }
+}
+
+function savePostsToStorage(){
+  localStorage.setItem('posts', JSON.stringify(posts));
+}
+
+// 댓글 기능
+function renderComments() {
+  const list = document.getElementById('comment-list');
+  list.innerHTML = '';
+  if (!currentPost || !currentPost.comments) return;
+
+  currentPost.comments.forEach((c) => {
+    const div = document.createElement('div');
+    div.style.padding = "6px 0";
+    div.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+    div.innerHTML = `<strong>익명</strong> <span style="font-size:12px; color:var(--muted);">${c.date}</span><br>${c.text}`;
+    list.appendChild(div);
+  });
+}
+
+function addComment() {
+  if (!currentPost) return;
+  const input = document.getElementById('comment-input');
+  const text = input.value.trim();
+  if (!text) {
+    alert('댓글을 입력하세요.');
+    return;
+  }
+
+  if (!currentPost.comments) currentPost.comments = [];
+  currentPost.comments.push({
+    text,
+    date: new Date().toLocaleString()
+  });
+
+  savePostsToStorage();
+  renderComments();
+  input.value = '';
+}
+
+loadPosts();
+</script>
+</body>
+</html>
