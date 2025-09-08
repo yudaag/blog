@@ -54,18 +54,15 @@ input{padding:8px;border-radius:6px;border:none;width:100%;margin:6px 0;}
 </nav>
 
 <article id="article">
-  
-    <div id="post-actions" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+  <div id="post-actions" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
     <!-- 왼쪽: 새 글 작성 -->
     <button onclick="window.location.href='upload.html'" style="margin-bottom:25px;">✍️ 새 글 작성</button>
-
-
     <!-- 오른쪽: 수정, 삭제 -->
     <div>
         <button class="edit-btn" onclick="editCurrentPost()">수정</button>
         <button class="delete-btn" onclick="deleteCurrentPost()">삭제</button>
     </div>
-    </div>
+  </div>
 
   <h1 class="post-title" id="post-title">환영합니다</h1>
   <div class="post-date" id="post-date">게시일: —</div>
@@ -73,7 +70,7 @@ input{padding:8px;border-radius:6px;border:none;width:100%;margin:6px 0;}
   <hr style="border:none; border-bottom:1px solid rgba(255,255,255,0.2); margin:10px 0;">
 
   <div id="post-content">
-    <p>글감과 함께 나의 일상을 기록하고, 댓글도 달며 이웃들과 공유해보세요! :)</p>
+    <p>글감과 함께 나의 일상을 기록하고, 댓글도 달며 친구들과 공유해보세요! :)</p>
   </div>
 
   <!-- 댓글 영역 -->
@@ -128,15 +125,14 @@ function renderPostList(posts){
     document.getElementById('post-title').textContent = "게시물을 작성해보세요";
     document.getElementById('post-date').textContent = "";
     document.getElementById('post-content').innerHTML = "";
-  
     // 글 작성 버튼만 보이게
     document.getElementById('post-actions').style.display = 'flex';
     document.querySelector('#post-actions .edit-btn').style.display = 'none';
     document.querySelector('#post-actions .delete-btn').style.display = 'none';
+    document.getElementById('comment-list').innerHTML = "";
     return;
-}
-
   }
+
   posts.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
   posts.forEach(p=>{
     const it = document.createElement('div'); it.className='post-item';
@@ -153,7 +149,9 @@ function loadPost(p){
   document.getElementById('post-title').textContent = p.title || '제목 없음';
   document.getElementById('post-date').textContent = '게시일: ' + (p.date||'—');
   document.getElementById('post-content').innerHTML = mdToHtml(p.content||'');
-  document.getElementById('post-actions').style.display = 'block';
+  document.getElementById('post-actions').style.display = 'flex';
+  document.querySelector('#post-actions .edit-btn').style.display = 'inline-block';
+  document.querySelector('#post-actions .delete-btn').style.display = 'inline-block';
   renderComments();
 }
 
@@ -176,11 +174,6 @@ function deleteCurrentPost(){
     savePostsToStorage();
     currentPost = null;
     renderPostList(posts);
-    document.getElementById('post-title').textContent = "게시물을 작성해보세요";
-    document.getElementById('post-date').textContent = "";
-    document.getElementById('post-content').innerHTML = "";
-    document.getElementById('post-actions').style.display = 'none';
-    document.getElementById('comment-list').innerHTML = "";
   }
 }
 
