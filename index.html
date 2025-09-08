@@ -128,8 +128,14 @@ function renderPostList(posts){
     document.getElementById('post-title').textContent = "게시물을 작성해보세요";
     document.getElementById('post-date').textContent = "";
     document.getElementById('post-content').innerHTML = "";
-    document.getElementById('post-actions').style.display = 'none';
+  
+    // 글 작성 버튼만 보이게
+    document.getElementById('post-actions').style.display = 'flex';
+    document.querySelector('#post-actions .edit-btn').style.display = 'none';
+    document.querySelector('#post-actions .delete-btn').style.display = 'none';
     return;
+}
+
   }
   posts.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
   posts.forEach(p=>{
