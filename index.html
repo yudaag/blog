@@ -26,6 +26,8 @@ article{padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(2
 pre{background:#00121a;padding:12px;border-radius:8px;overflow:auto}
 a{color:var(--accent)}
 footer{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+button{padding:6px 12px;border:none;border-radius:6px;background:var(--accent);color:#000;font-weight:600;cursor:pointer;margin-right:6px;}
+input{padding:8px;border-radius:6px;border:none;width:100%;margin:6px 0;}
 @media (max-width:900px){main{grid-template-columns:1fr}nav{order:2}article{order:1}}
 </style>
 </head>
@@ -53,7 +55,7 @@ footer{padding:20px;text-align:center;color:var(--muted);font-size:13px}
 
 <article id="article">
   
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <div id="post-actions" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
     <!-- 왼쪽: 새 글 작성 -->
     <button onclick="window.location.href='upload.html'">✍️ 새 글 작성</button>
 
@@ -71,6 +73,15 @@ footer{padding:20px;text-align:center;color:var(--muted);font-size:13px}
 
   <div id="post-content">
     <p>이 템플릿은 정적 블로그입니다. 게시글은 <code>/posts/<slug>.md</code> 형태의 마크다운 파일로 관리하고, 목록은 localStorage에 저장됩니다.</p>
+  </div>
+
+  <!-- 댓글 영역 -->
+  <hr style="border:none; border-bottom:1px solid rgba(255,255,255,0.2); margin:20px 0;">
+  <div id="comments-section">
+    <h3 style="margin-top:0;">💬 댓글</h3>
+    <div id="comment-list" style="margin-bottom:10px;"></div>
+    <input type="text" id="comment-input" placeholder="댓글을 입력하세요" />
+    <button onclick="addComment()">등록</button>
   </div>
 </article>
 </main>
@@ -131,10 +142,12 @@ function renderPostList(posts){
 
 function loadPost(p){
   currentPost = p;
+  if (!currentPost.comments) currentPost.comments = [];
   document.getElementById('post-title').textContent = p.title || '제목 없음';
   document.getElementById('post-date').textContent = '게시일: ' + (p.date||'—');
   document.getElementById('post-content').innerHTML = mdToHtml(p.content||'');
   document.getElementById('post-actions').style.display = 'block';
+  renderComments();
 }
 
 function editCurrentPost(){
@@ -160,11 +173,47 @@ function deleteCurrentPost(){
     document.getElementById('post-date').textContent = "";
     document.getElementById('post-content').innerHTML = "";
     document.getElementById('post-actions').style.display = 'none';
+    document.getElementById('comment-list').innerHTML = "";
   }
 }
 
 function savePostsToStorage(){
   localStorage.setItem('posts', JSON.stringify(posts));
+}
+
+// 댓글 기능
+function renderComments() {
+  const list = document.getElementById('comment-list');
+  list.innerHTML = '';
+  if (!currentPost || !currentPost.comments) return;
+
+  currentPost.comments.forEach((c) => {
+    const div = document.createElement('div');
+    div.style.padding = "6px 0";
+    div.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+    div.innerHTML = `<strong>익명</strong> <span style="font-size:12px; color:var(--muted);">${c.date}</span><br>${c.text}`;
+    list.appendChild(div);
+  });
+}
+
+function addComment() {
+  if (!currentPost) return;
+  const input = document.getElementById('comment-input');
+  const text = input.value.trim();
+  if (!text) {
+    alert('댓글을 입력하세요.');
+    return;
+  }
+
+  if (!currentPost.comments) currentPost.comments = [];
+  currentPost.comments.push({
+    text,
+    date: new Date().toLocaleString()
+  });
+
+  savePostsToStorage();
+  renderComments();
+  input.value = '';
 }
 
 loadPosts();
